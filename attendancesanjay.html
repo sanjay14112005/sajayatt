@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .date-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .student-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .student-row {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .student-row:last-child {
+            border-bottom: none;
+        }
+        .student-name {
+            flex: 1;
+            font-weight: bold;
+        }
+        .attendance-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .present-btn {
+            background-color: #e6f7e6;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .present-btn.active {
+            background-color: #66bb6a;
+            color: white;
+        }
+        .absent-btn {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .absent-btn.active {
+            background-color: #ef5350;
+            color: white;
+        }
+        .submit-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .submit-btn {
+            background-color: #1976d2;
+            color: white;
+            font-size: 16px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .submit-btn:hover {
+            background-color: #1565c0;
+        }
+        .submit-btn:disabled {
+            background-color: #bbdefb;
+            cursor: not-allowed;
+        }
+        .status-message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Student Attendance System</h1>
+    
+    <div class="date-container">
+        <h3>Date: <span id="current-date"></span></h3>
+    </div>
+    
+    <div class="student-container">
+        <div class="student-row">
+            <div class="student-name">Student 1</div>
+            <div class="attendance-buttons">
+                <button class="btn present-btn" onclick="markAttendance(0, 'present')">Present</button>
+                <button class="btn absent-btn" onclick="markAttendance(0, 'absent')">Absent</button>
+            </div>
+        </div>
+        <div class="student-row">
+            <div class="student-name">Student 2</div>
+            <div class="attendance-buttons">
+                <button class="btn present-btn" onclick="markAttendance(1, 'present')">Present</button>
+                <button class="btn absent-btn" onclick="markAttendance(1, 'absent')">Absent</button>
+            </div>
+        </div>
+        <div class="student-row">
+            <div class="student-name">Student 3</div>
+            <div class="attendance-buttons">
+                <button class="btn present-btn" onclick="markAttendance(2, 'present')">Present</button>
+                <button class="btn absent-btn" onclick="markAttendance(2, 'absent')">Absent</button>
+            </div>
+        </div>
+        <div class="student-row">
+            <div class="student-name">Student 4</div>
+            <div class="attendance-buttons">
+                <button class="btn present-btn" onclick="markAttendance(3, 'present')">Present</button>
+                <button class="btn absent-btn" onclick="markAttendance(3, 'absent')">Absent</button>
+            </div>
+        </div>
+        <div class="student-row">
+            <div class="student-name">Student 5</div>
+            <div class="attendance-buttons">
+                <button class="btn present-btn" onclick="markAttendance(4, 'present')">Present</button>
+                <button class="btn absent-btn" onclick="markAttendance(4, 'absent')">Absent</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="submit-container">
+        <button id="submit-btn" class="submit-btn" disabled onclick="submitAttendance()">Submit Attendance</button>
+    </div>
+    
+    <div id="status-message" class="status-message"></div>
+    
+    <script>
+        // Display current date
+        const today = new Date();
+        document.getElementById('current-date').textContent = today.toDateString();
+        
+        // Initialize attendance array
+        const students = ['Student 1', 'Student 2', 'Student 3', 'Student 4', 'Student 5'];
+        const attendance = Array(students.length).fill(null);
+        
+        // Update submit button state
+        function updateSubmitButton() {
+            const allMarked = attendance.every(status => status !== null);
+            document.getElementById('submit-btn').disabled = !allMarked;
+        }
+        
+        // Mark attendance
+        function markAttendance(studentIndex, status) {
+            attendance[studentIndex] = status;
+            
+            // Update button styles
+            const studentRow = document.querySelectorAll('.student-row')[studentIndex];
+            const presentBtn = studentRow.querySelector('.present-btn');
+            const absentBtn = studentRow.querySelector('.absent-btn');
+            
+            if (status === 'present') {
+                presentBtn.classList.add('active');
+                absentBtn.classList.remove('active');
+            } else {
+                absentBtn.classList.add('active');
+                presentBtn.classList.remove('active');
+            }
+            
+            updateSubmitButton();
+        }
+        
+        // Submit attendance data
+        function submitAttendance() {
+            const submitBtn = document.getElementById('submit-btn');
+            const statusMessage = document.getElementById('status-message');
+            
+            // Disable submit button during submission
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            // Prepare data for submission
+            const date = today.toISOString().split('T')[0];
+            const attendanceData = {
+                date: date,
+                students: students.map((name, index) => ({
+                    name: name,
+                    status: attendance[index]
+                }))
+            };
+            
+            // Replace with your actual Google Apps Script web app URL
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhecRlOqNMD06MqQmSBZz_Jp80_gS-9YJuozGuV9i5WB-fkQw_nlcsAopE0df4xddM/exec';
+            
+            // Send data to Google Apps Script
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(attendanceData),
+                headers: {
+                    'Content-Type': 'text/plain'  // Using text/plain to avoid CORS preflight
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();  // Google Apps Script returns text by default
+            })
+            .then(text => {
+                try {
+                    // Try to parse as JSON if possible
+                    return JSON.parse(text);
+                } catch (e) {
+                    // If not JSON, return the text
+                    return { result: 'success', message: text };
+                }
+            })
+            .then(data => {
+                statusMessage.textContent = 'Attendance submitted successfully!';
+                statusMessage.className = 'status-message success';
+                statusMessage.style.display = 'block';
+                
+                // Reset attendance buttons after successful submission
+                attendance.fill(null);
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                updateSubmitButton();
+            })
+            .catch(error => {
+                statusMessage.textContent = 'Error submitting attendance: ' + error.message;
+                statusMessage.className = 'status-message error';
+                statusMessage.style.display = 'block';
+                submitBtn.disabled = false;
+            })
+            .finally(() => {
+                submitBtn.textContent = 'Submit Attendance';
+            });
+        }
+    </script>
+</body>
+</html>
